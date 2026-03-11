@@ -1,44 +1,44 @@
 <!DOCTYPE html>
 <html lang="el">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>DJ Robo</title>
-
-<link rel="stylesheet" href="style.css">
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DJ Robo</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
+  <div class="chat-widget">
+    <div class="chat-header">
+      <div class="chat-brand">
+        <img src="logo.png" alt="DJ Robo Logo" class="chat-logo" />
+        <div class="chat-brand-text">
+          <h1>DJ Robo</h1>
+          <p>Ο μουσικός σου βοηθός</p>
+        </div>
+      </div>
 
-<div class="chat-widget">
+      <button id="reloadChat" class="reload-btn" type="button" title="Επανεκκίνηση συνομιλίας">↻</button>
+    </div>
 
-<div class="chat-header">
+    <div id="chatMessages" class="chat-messages"></div>
 
-<div class="chat-brand">
-<img src="logo.png" class="chat-logo">
-<div>
-<h1>DJ Robo</h1>
-<p>Ο μουσικός σου βοηθός</p>
-</div>
-</div>
+    <div class="chat-suggestions" id="chatSuggestions">
+      <button type="button" class="suggestion-btn">Adele</button>
+      <button type="button" class="suggestion-btn">Ed Sheeran</button>
+      <button type="button" class="suggestion-btn">Hello</button>
+    </div>
 
-</div>
+    <div class="chat-input-area">
+      <input
+        id="query"
+        type="text"
+        placeholder="Γράψε όνομα τραγουδιού ή καλλιτέχνη..."
+        autocomplete="off"
+      />
+      <button id="searchBtn" type="button">Αναζήτηση</button>
+    </div>
+  </div>
 
-<div id="chatMessages" class="chat-messages"></div>
-
-<div class="chat-input-area">
-
-<input id="query" placeholder="Γράψε όνομα τραγουδιού ή καλλιτέχνη">
-
-<button id="searchBtn">Αναζήτηση</button>
-
-</div>
-
-</div>
-
-<script src="app.js"></script>
-
+  <script src="app.js"></script>
 </body>
 </html>
