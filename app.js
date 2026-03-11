@@ -1,12 +1,18 @@
 const queryInput = document.getElementById("query");
 const searchBtn = document.getElementById("searchBtn");
 const chatMessages = document.getElementById("chatMessages");
+const suggestionButtons = document.querySelectorAll(".suggestion-btn");
+const reloadBtn = document.getElementById("reloadChat");
 
 const welcomeMessage =
   "Γειά σου. Είμαι ο DJ Robo, ο μουσικός σου βοηθός. Είμαι εδώ για να σε βοηθήσω να ανακαλύψεις τις καλύτερες μουσικές επιλογές και να ακούσεις τους αγαπημένους σου καλλιτέχνες.";
 
 function normalize(text) {
   return text.toLowerCase().trim();
+}
+
+function scrollToBottom() {
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 function addMessage(text, sender = "bot", link = null, linkLabel = null) {
@@ -21,12 +27,12 @@ function addMessage(text, sender = "bot", link = null, linkLabel = null) {
   bubble.appendChild(textNode);
 
   if (link && linkLabel) {
-    const a = document.createElement("a");
-    a.href = link;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    a.textContent = linkLabel;
-    bubble.appendChild(a);
+    const linkNode = document.createElement("a");
+    linkNode.href = link;
+    linkNode.target = "_blank";
+    linkNode.rel = "noopener noreferrer";
+    linkNode.textContent = linkLabel;
+    bubble.appendChild(linkNode);
   }
 
   row.appendChild(bubble);
@@ -54,11 +60,9 @@ function addTypingIndicator() {
 
 function removeTypingIndicator() {
   const typingRow = document.getElementById("typingRow");
-  if (typingRow) typingRow.remove();
-}
-
-function scrollToBottom() {
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+  if (typingRow) {
+    typingRow.remove();
+  }
 }
 
 function findBestMatch(catalog, query) {
@@ -72,7 +76,9 @@ function findBestMatch(catalog, query) {
   );
   if (result) return result;
 
-  result = catalog.find(item => normalize(item.name).includes(q));
+  result = catalog.find(item =>
+    normalize(item.name).includes(q)
+  );
   if (result) return result;
 
   result = catalog.find(item =>
@@ -81,15 +87,15 @@ function findBestMatch(catalog, query) {
   if (result) return result;
 
   result = catalog.find(item => {
-    const songText = `${item.name} ${item.artist || ""}`.toLowerCase();
-    return songText.includes(q);
+    const combined = `${item.name} ${item.artist || ""}`;
+    return normalize(combined).includes(q);
   });
   if (result) return result;
 
   return null;
 }
 
-function buildBotReply(result) {
+function buildReply(result) {
   if (result.type === "artist") {
     return {
       text: `Βρήκα τον καλλιτέχνη ${result.name}. Πάτησε πιο κάτω για να ανοίξεις τη σελίδα του.`,
@@ -103,8 +109,13 @@ function buildBotReply(result) {
   };
 }
 
-async function searchMusic() {
-  const message = queryInput.value.trim();
+function resetChat() {
+  chatMessages.innerHTML = "";
+  addMessage(welcomeMessage, "bot");
+}
+
+async function handleSearch(customMessage = null) {
+  const message = customMessage || queryInput.value.trim();
 
   if (!message) {
     addMessage("Γράψε πρώτα όνομα τραγουδιού ή καλλιτέχνη.");
@@ -130,8 +141,8 @@ async function searchMusic() {
       return;
     }
 
-    const botReply = buildBotReply(result);
-    addMessage(botReply.text, "bot", result.url, botReply.label);
+    const reply = buildReply(result);
+    addMessage(reply.text, "bot", result.url, reply.label);
   } catch (error) {
     removeTypingIndicator();
     addMessage("Υπήρξε πρόβλημα στη φόρτωση των δεδομένων. Δοκίμασε ξανά.");
@@ -139,13 +150,26 @@ async function searchMusic() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  addMessage(welcomeMessage, "bot");
+  resetChat();
 
-  searchBtn.addEventListener("click", searchMusic);
+  searchBtn.addEventListener("click", function () {
+    handleSearch();
+  });
 
   queryInput.addEventListener("keydown", function (e) {
     if (e.key === "Enter") {
-      searchMusic();
+      handleSearch();
     }
+  });
+
+  suggestionButtons.forEach(button => {
+    button.addEventListener("click", function () {
+      handleSearch(button.textContent);
+    });
+  });
+
+  reloadBtn.addEventListener("click", function () {
+    queryInput.value = "";
+    resetChat();
   });
 });
