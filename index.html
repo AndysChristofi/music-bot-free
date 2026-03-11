@@ -9,33 +9,27 @@
 <body>
   <div class="chat-widget">
     <div class="chat-header">
-      <div class="chat-brand">
-        <img src="logo.png" alt="DJ Robo Logo" class="chat-logo" />
-        <div class="chat-brand-text">
-          <h1>DJ Robo</h1>
-          <p>Ο μουσικός σου βοηθός</p>
-        </div>
+      <div class="chat-header-left">
+        <img src="logo.png" alt="DJ Robo Logo" class="header-logo" />
+        <div class="chat-header-text">DJ ROBO</div>
       </div>
 
-      <button id="reloadChat" class="reload-btn" type="button" title="Επανεκκίνηση συνομιλίας">↻</button>
+      <button id="reloadChat" class="header-icon-btn" type="button" title="Ανανέωση">↻</button>
     </div>
 
     <div id="chatMessages" class="chat-messages"></div>
 
-    <div class="chat-suggestions" id="chatSuggestions">
-      <button type="button" class="suggestion-btn">Adele</button>
-      <button type="button" class="suggestion-btn">Ed Sheeran</button>
-      <button type="button" class="suggestion-btn">Hello</button>
-    </div>
-
-    <div class="chat-input-area">
-      <input
-        id="query"
-        type="text"
-        placeholder="Γράψε όνομα τραγουδιού ή καλλιτέχνη..."
-        autocomplete="off"
-      />
-      <button id="searchBtn" type="button">Αναζήτηση</button>
+    <div class="chat-input-wrap">
+      <div class="chat-input-area">
+        <input
+          id="query"
+          type="text"
+          placeholder="Message..."
+          autocomplete="off"
+        />
+        <button id="searchBtn" type="button" class="send-btn">↑</button>
+      </div>
+      <div class="chat-footer-note">Powered by DJ Robo</div>
     </div>
   </div>
 
