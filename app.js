@@ -1,7 +1,6 @@
 const queryInput = document.getElementById("query");
 const searchBtn = document.getElementById("searchBtn");
 const chatMessages = document.getElementById("chatMessages");
-const suggestionButtons = document.querySelectorAll(".suggestion-btn");
 const reloadBtn = document.getElementById("reloadChat");
 
 const welcomeMessage =
@@ -15,9 +14,24 @@ function scrollToBottom() {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+function createAvatar(hidden = false) {
+  const avatar = document.createElement("img");
+  avatar.src = "logo.png";
+  avatar.alt = "DJ Robo";
+  avatar.className = hidden ? "message-avatar hidden" : "message-avatar";
+  return avatar;
+}
+
 function addMessage(text, sender = "bot", link = null, linkLabel = null) {
   const row = document.createElement("div");
   row.className = `message-row ${sender}`;
+
+  if (sender === "bot") {
+    row.appendChild(createAvatar(false));
+  }
+
+  const bubbleWrap = document.createElement("div");
+  bubbleWrap.className = "message-bubble-wrap";
 
   const bubble = document.createElement("div");
   bubble.className = `message ${sender}`;
@@ -35,7 +49,9 @@ function addMessage(text, sender = "bot", link = null, linkLabel = null) {
     bubble.appendChild(linkNode);
   }
 
-  row.appendChild(bubble);
+  bubbleWrap.appendChild(bubble);
+  row.appendChild(bubbleWrap);
+
   chatMessages.appendChild(row);
   scrollToBottom();
 }
@@ -45,6 +61,11 @@ function addTypingIndicator() {
   row.className = "message-row bot";
   row.id = "typingRow";
 
+  row.appendChild(createAvatar(false));
+
+  const bubbleWrap = document.createElement("div");
+  bubbleWrap.className = "message-bubble-wrap";
+
   const bubble = document.createElement("div");
   bubble.className = "message bot";
 
@@ -53,7 +74,9 @@ function addTypingIndicator() {
   typing.innerHTML = "<span></span><span></span><span></span>";
 
   bubble.appendChild(typing);
-  row.appendChild(bubble);
+  bubbleWrap.appendChild(bubble);
+  row.appendChild(bubbleWrap);
+
   chatMessages.appendChild(row);
   scrollToBottom();
 }
@@ -76,9 +99,7 @@ function findBestMatch(catalog, query) {
   );
   if (result) return result;
 
-  result = catalog.find(item =>
-    normalize(item.name).includes(q)
-  );
+  result = catalog.find(item => normalize(item.name).includes(q));
   if (result) return result;
 
   result = catalog.find(item =>
@@ -98,14 +119,14 @@ function findBestMatch(catalog, query) {
 function buildReply(result) {
   if (result.type === "artist") {
     return {
-      text: `Βρήκα τον καλλιτέχνη ${result.name}. Πάτησε πιο κάτω για να ανοίξεις τη σελίδα του.`,
+      text: `Εδώ είναι η σελίδα του ${result.name}:`,
       label: result.name
     };
   }
 
   return {
-    text: `Βρήκα το τραγούδι ${result.name} από ${result.artist}. Πάτησε πιο κάτω για να το ανοίξεις.`,
-    label: `${result.name} — ${result.artist}`
+    text: `Εδώ είναι το τραγούδι ${result.name}${result.artist ? ` από ${result.artist}` : ""}:`,
+    label: result.artist ? `${result.name} — ${result.artist}` : result.name
   };
 }
 
@@ -118,7 +139,7 @@ async function handleSearch(customMessage = null) {
   const message = customMessage || queryInput.value.trim();
 
   if (!message) {
-    addMessage("Γράψε πρώτα όνομα τραγουδιού ή καλλιτέχνη.");
+    addMessage("Γράψε πρώτα όνομα τραγουδιού ή καλλιτέχνη.", "bot");
     return;
   }
 
@@ -130,14 +151,14 @@ async function handleSearch(customMessage = null) {
     const response = await fetch("catalog.json");
     const catalog = await response.json();
 
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 450));
 
     removeTypingIndicator();
 
     const result = findBestMatch(catalog, message);
 
     if (!result) {
-      addMessage("Δεν βρήκα αυτό το τραγούδι ή τον καλλιτέχνη. Δοκίμασε άλλο όνομα.");
+      addMessage("Δεν βρήκα αυτό το τραγούδι ή τον καλλιτέχνη. Δοκίμασε άλλο όνομα.", "bot");
       return;
     }
 
@@ -145,7 +166,7 @@ async function handleSearch(customMessage = null) {
     addMessage(reply.text, "bot", result.url, reply.label);
   } catch (error) {
     removeTypingIndicator();
-    addMessage("Υπήρξε πρόβλημα στη φόρτωση των δεδομένων. Δοκίμασε ξανά.");
+    addMessage("Υπήρξε πρόβλημα στη φόρτωση των δεδομένων. Δοκίμασε ξανά.", "bot");
   }
 }
 
@@ -160,12 +181,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (e.key === "Enter") {
       handleSearch();
     }
-  });
-
-  suggestionButtons.forEach(button => {
-    button.addEventListener("click", function () {
-      handleSearch(button.textContent);
-    });
   });
 
   reloadBtn.addEventListener("click", function () {
