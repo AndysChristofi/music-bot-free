@@ -1,0 +1,28 @@
+[
+  {
+    "type": "artist",
+    "name": "Adele",
+    "url": "https://example.com/artist/adele",
+    "aliases": ["adele", "adele adkins"]
+  },
+  {
+    "type": "artist",
+    "name": "Ed Sheeran",
+    "url": "https://example.com/artist/ed-sheeran",
+    "aliases": ["ed sheeran", "ed"]
+  },
+  {
+    "type": "song",
+    "name": "Hello",
+    "artist": "Adele",
+    "url": "https://example.com/song/hello",
+    "aliases": ["hello", "adele hello"]
+  },
+  {
+    "type": "song",
+    "name": "Shape of You",
+    "artist": "Ed Sheeran",
+    "url": "https://example.com/song/shape-of-you",
+    "aliases": ["shape of you", "ed sheeran shape of you"]
+  }
+]
