@@ -1,24 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="el">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Music Finder</title>
+  <title>DJ Robo</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="widget">
-    <div class="header">Music Finder</div>
-
-    <div class="body">
-      <p class="intro">Type a song title or artist name.</p>
-
-      <div class="search-row">
-        <input id="query" type="text" placeholder="Example: Adele or Hello" />
-        <button id="searchBtn">Search</button>
+  <div class="chat-widget">
+    <div class="chat-header">
+      <div class="chat-brand">
+        <img src="logo.png" alt="DJ Robo Logo" class="chat-logo" />
+        <div>
+          <h1>DJ Robo</h1>
+          <p>Ο μουσικός σου βοηθός</p>
+        </div>
       </div>
+    </div>
 
-      <div id="result" class="result hidden"></div>
+    <div id="chatMessages" class="chat-messages"></div>
+
+    <div class="chat-input-area">
+      <input
+        id="query"
+        type="text"
+        placeholder="Γράψε όνομα τραγουδιού ή καλλιτέχνη..."
+        autocomplete="off"
+      />
+      <button id="searchBtn" type="button">Αναζήτηση</button>
     </div>
   </div>
 
