@@ -6,19 +6,17 @@ const reloadBtn = document.getElementById("reloadChat");
 const welcomeMessage =
   "Γειά σου. Είμαι ο DJ Robo, ο μουσικός σου βοηθός. Είμαι εδώ για να σε βοηθήσω να ανακαλύψεις τις καλύτερες μουσικές επιλογές και να ακούσεις τους αγαπημένους σου καλλιτέχνες.";
 
-function normalize(text) {
-  return text.toLowerCase().trim();
-}
+const API_BASE = "https://dj-robo-api.christofi280.workers.dev";
 
 function scrollToBottom() {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function createAvatar(hidden = false) {
+function createAvatar() {
   const avatar = document.createElement("img");
   avatar.src = "logo.png";
   avatar.alt = "DJ Robo";
-  avatar.className = hidden ? "message-avatar hidden" : "message-avatar";
+  avatar.className = "message-avatar";
   return avatar;
 }
 
@@ -27,7 +25,7 @@ function addMessage(text, sender = "bot", link = null, linkLabel = null) {
   row.className = `message-row ${sender}`;
 
   if (sender === "bot") {
-    row.appendChild(createAvatar(false));
+    row.appendChild(createAvatar());
   }
 
   const bubbleWrap = document.createElement("div");
@@ -61,7 +59,7 @@ function addTypingIndicator() {
   row.className = "message-row bot";
   row.id = "typingRow";
 
-  row.appendChild(createAvatar(false));
+  row.appendChild(createAvatar());
 
   const bubbleWrap = document.createElement("div");
   bubbleWrap.className = "message-bubble-wrap";
@@ -88,51 +86,33 @@ function removeTypingIndicator() {
   }
 }
 
-function findBestMatch(catalog, query) {
-  const q = normalize(query);
-
-  let result = catalog.find(item => normalize(item.name) === q);
-  if (result) return result;
-
-  result = catalog.find(item =>
-    (item.aliases || []).some(alias => normalize(alias) === q)
-  );
-  if (result) return result;
-
-  result = catalog.find(item => normalize(item.name).includes(q));
-  if (result) return result;
-
-  result = catalog.find(item =>
-    (item.aliases || []).some(alias => normalize(alias).includes(q))
-  );
-  if (result) return result;
-
-  result = catalog.find(item => {
-    const combined = `${item.name} ${item.artist || ""}`;
-    return normalize(combined).includes(q);
-  });
-  if (result) return result;
-
-  return null;
+function resetChat() {
+  chatMessages.innerHTML = "";
+  addMessage(welcomeMessage, "bot");
 }
 
-function buildReply(result) {
-  if (result.type === "artist") {
+function buildBotReply(item) {
+  if (!item) {
     return {
-      text: `Εδώ είναι η σελίδα του ${result.name}:`,
-      label: result.name
+      text: "Δεν βρήκα αυτό το τραγούδι ή τον καλλιτέχνη. Δοκίμασε άλλο όνομα.",
+      link: null,
+      label: null
+    };
+  }
+
+  if (item.song && item.artist) {
+    return {
+      text: `Εδώ είναι το τραγούδι ${item.song} από ${item.artist}:`,
+      link: item.url,
+      label: `${item.song} — ${item.artist}`
     };
   }
 
   return {
-    text: `Εδώ είναι το τραγούδι ${result.name}${result.artist ? ` από ${result.artist}` : ""}:`,
-    label: result.artist ? `${result.name} — ${result.artist}` : result.name
+    text: "Βρήκα αποτέλεσμα για την αναζήτησή σου:",
+    link: item.url || null,
+    label: item.song || item.artist || "Άνοιγμα"
   };
-}
-
-function resetChat() {
-  chatMessages.innerHTML = "";
-  addMessage(welcomeMessage, "bot");
 }
 
 async function handleSearch(customMessage = null) {
@@ -148,25 +128,32 @@ async function handleSearch(customMessage = null) {
   addTypingIndicator();
 
   try {
-    const response = await fetch("catalog.json");
-    const catalog = await response.json();
+    const response = await fetch(
+      `${API_BASE}/api/search?q=${encodeURIComponent(message)}`
+    );
 
-    await new Promise(resolve => setTimeout(resolve, 450));
+    const data = await response.json();
 
     removeTypingIndicator();
 
-    const result = findBestMatch(catalog, message);
-
-    if (!result) {
-      addMessage("Δεν βρήκα αυτό το τραγούδι ή τον καλλιτέχνη. Δοκίμασε άλλο όνομα.", "bot");
+    if (!data.results || data.results.length === 0) {
+      addMessage(
+        "Δεν βρήκα αυτό το τραγούδι ή τον καλλιτέχνη. Δοκίμασε άλλο όνομα.",
+        "bot"
+      );
       return;
     }
 
-    const reply = buildReply(result);
-    addMessage(reply.text, "bot", result.url, reply.label);
+    const firstResult = data.results[0];
+    const reply = buildBotReply(firstResult);
+
+    addMessage(reply.text, "bot", reply.link, reply.label);
   } catch (error) {
     removeTypingIndicator();
-    addMessage("Υπήρξε πρόβλημα στη φόρτωση των δεδομένων. Δοκίμασε ξανά.", "bot");
+    addMessage(
+      "Υπήρξε πρόβλημα στην αναζήτηση. Δοκίμασε ξανά σε λίγο.",
+      "bot"
+    );
   }
 }
 
@@ -183,8 +170,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  reloadBtn.addEventListener("click", function () {
-    queryInput.value = "";
-    resetChat();
-  });
+  if (reloadBtn) {
+    reloadBtn.addEventListener("click", function () {
+      queryInput.value = "";
+      resetChat();
+    });
+  }
 });
