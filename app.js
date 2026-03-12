@@ -63,19 +63,12 @@ function addBotRichMessage(message, options = [], followups = []) {
 
   if (options.length > 0) {
     options.forEach((option) => {
-      if (option.url && option.url !== "#") {
-        const linkNode = document.createElement("a");
-        linkNode.href = option.url;
-        linkNode.target = "_blank";
-        linkNode.rel = "noopener noreferrer";
-        linkNode.textContent = option.label;
-        bubble.appendChild(linkNode);
-      } else {
-        const plainNode = document.createElement("div");
-        plainNode.style.marginTop = "8px";
-        plainNode.textContent = option.label;
-        bubble.appendChild(plainNode);
-      }
+      const linkNode = document.createElement("a");
+      linkNode.href = option.url;
+      linkNode.target = "_blank";
+      linkNode.rel = "noopener noreferrer";
+      linkNode.textContent = option.label;
+      bubble.appendChild(linkNode);
     });
   }
 
@@ -115,8 +108,8 @@ function addTypingIndicator() {
   bubble.appendChild(typing);
   bubbleWrap.appendChild(bubble);
   row.appendChild(bubbleWrap);
-
   chatMessages.appendChild(row);
+
   scrollToBottom();
 }
 
@@ -136,7 +129,7 @@ async function handleSearch(customMessage = null) {
   const message = customMessage || queryInput.value.trim();
 
   if (!message) {
-    addMessage("Γράψε πρώτα όνομα τραγουδιού ή καλλιτέχνη.", "bot");
+    addMessage("Γράψε πρώτα τι θέλεις να ακούσεις.", "bot");
     return;
   }
 
@@ -150,6 +143,7 @@ async function handleSearch(customMessage = null) {
     );
 
     const data = await response.json();
+
     removeTypingIndicator();
 
     addBotRichMessage(
