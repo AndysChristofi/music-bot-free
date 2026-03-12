@@ -20,7 +20,7 @@ function createAvatar() {
   return avatar;
 }
 
-function addMessage(text, sender = "bot", link = null, linkLabel = null) {
+function addMessage(text, sender = "bot") {
   const row = document.createElement("div");
   row.className = `message-row ${sender}`;
 
@@ -38,19 +38,60 @@ function addMessage(text, sender = "bot", link = null, linkLabel = null) {
   textNode.textContent = text;
   bubble.appendChild(textNode);
 
-  if (link && linkLabel) {
-    const linkNode = document.createElement("a");
-    linkNode.href = link;
-    linkNode.target = "_blank";
-    linkNode.rel = "noopener noreferrer";
-    linkNode.textContent = linkLabel;
-    bubble.appendChild(linkNode);
+  bubbleWrap.appendChild(bubble);
+  row.appendChild(bubbleWrap);
+  chatMessages.appendChild(row);
+
+  scrollToBottom();
+}
+
+function addBotRichMessage(message, options = [], followups = []) {
+  const row = document.createElement("div");
+  row.className = "message-row bot";
+
+  row.appendChild(createAvatar());
+
+  const bubbleWrap = document.createElement("div");
+  bubbleWrap.className = "message-bubble-wrap";
+
+  const bubble = document.createElement("div");
+  bubble.className = "message bot";
+
+  const textNode = document.createElement("div");
+  textNode.textContent = message;
+  bubble.appendChild(textNode);
+
+  if (options.length > 0) {
+    options.forEach((option) => {
+      if (option.url && option.url !== "#") {
+        const linkNode = document.createElement("a");
+        linkNode.href = option.url;
+        linkNode.target = "_blank";
+        linkNode.rel = "noopener noreferrer";
+        linkNode.textContent = option.label;
+        bubble.appendChild(linkNode);
+      } else {
+        const plainNode = document.createElement("div");
+        plainNode.style.marginTop = "8px";
+        plainNode.textContent = option.label;
+        bubble.appendChild(plainNode);
+      }
+    });
+  }
+
+  if (followups.length > 0) {
+    followups.forEach((line) => {
+      const followNode = document.createElement("div");
+      followNode.style.marginTop = "8px";
+      followNode.textContent = line;
+      bubble.appendChild(followNode);
+    });
   }
 
   bubbleWrap.appendChild(bubble);
   row.appendChild(bubbleWrap);
-
   chatMessages.appendChild(row);
+
   scrollToBottom();
 }
 
@@ -91,30 +132,6 @@ function resetChat() {
   addMessage(welcomeMessage, "bot");
 }
 
-function buildBotReply(item) {
-  if (!item) {
-    return {
-      text: "Δεν βρήκα αυτό το τραγούδι ή τον καλλιτέχνη. Δοκίμασε άλλο όνομα.",
-      link: null,
-      label: null
-    };
-  }
-
-  if (item.song && item.artist) {
-    return {
-      text: `Εδώ είναι το τραγούδι ${item.song} από ${item.artist}:`,
-      link: item.url,
-      label: `${item.song} — ${item.artist}`
-    };
-  }
-
-  return {
-    text: "Βρήκα αποτέλεσμα για την αναζήτησή σου:",
-    link: item.url || null,
-    label: item.song || item.artist || "Άνοιγμα"
-  };
-}
-
 async function handleSearch(customMessage = null) {
   const message = customMessage || queryInput.value.trim();
 
@@ -133,21 +150,13 @@ async function handleSearch(customMessage = null) {
     );
 
     const data = await response.json();
-
     removeTypingIndicator();
 
-    if (!data.results || data.results.length === 0) {
-      addMessage(
-        "Δεν βρήκα αυτό το τραγούδι ή τον καλλιτέχνη. Δοκίμασε άλλο όνομα.",
-        "bot"
-      );
-      return;
-    }
-
-    const firstResult = data.results[0];
-    const reply = buildBotReply(firstResult);
-
-    addMessage(reply.text, "bot", reply.link, reply.label);
+    addBotRichMessage(
+      data.message || "Δεν βρήκα κάτι συγκεκριμένο.",
+      data.options || [],
+      data.followups || []
+    );
   } catch (error) {
     removeTypingIndicator();
     addMessage(
